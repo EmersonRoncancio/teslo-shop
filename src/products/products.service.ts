@@ -11,7 +11,6 @@ import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 import { validate as IsUUID } from 'uuid';
-import { title } from 'process';
 
 @Injectable()
 export class ProductsService {
@@ -71,8 +70,21 @@ export class ProductsService {
     return products;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const product = await this.productRepository.preload({
+      id: id,
+      ...updateProductDto,
+    });
+
+    if (!product) throw new BadRequestException('No se encontro el produscto');
+
+    try {
+      await this.productRepository.save(product);
+
+      return product;
+    } catch (error) {
+      this.HandleError(error);
+    }
   }
 
   async remove(id: string) {
