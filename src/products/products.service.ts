@@ -24,6 +24,7 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     try {
       const newProduct = this.productRepository.create(createProductDto);
+      console.log(createProductDto);
       await this.productRepository.save(newProduct);
 
       return newProduct;
@@ -76,7 +77,7 @@ export class ProductsService {
       ...updateProductDto,
     });
 
-    if (!product) throw new BadRequestException('No se encontro el produscto');
+    if (!product) throw new BadRequestException('No se encontro el producto');
 
     try {
       await this.productRepository.save(product);
