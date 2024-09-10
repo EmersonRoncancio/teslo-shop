@@ -9,6 +9,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
+import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -30,20 +31,40 @@ export class ProductsService {
     }
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll(pagination: PaginationDTO) {
+    const { page = 1, limit = 5 } = pagination;
+
+    try {
+      const products = await this.productRepository.find({
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+
+      return products;
+    } catch (error) {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const products = await this.productRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!products) throw new BadRequestException('No existe el usuario');
+
+    return products;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    const product = await this.findOne(id);
+    await this.productRepository.remove(product);
+
+    return product;
   }
 
   private HandleError(error: any) {
