@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
+import { validate as IsUUID } from 'uuid';
+import { title } from 'process';
 
 @Injectable()
 export class ProductsService {
@@ -46,10 +48,23 @@ export class ProductsService {
     }
   }
 
-  async findOne(id: string) {
-    const products = await this.productRepository.findOne({
-      where: { id: id },
-    });
+  async findOne(term: string) {
+    let products;
+
+    if (IsUUID(term)) {
+      products = await this.productRepository.findOne({
+        where: { id: term },
+      });
+    } else {
+      const buidler = this.productRepository.createQueryBuilder();
+
+      products = await buidler
+        .where('UPPER(title)=:title or slug=:slug', {
+          title: term.toUpperCase(),
+          slug: term.toLowerCase(),
+        })
+        .getOne();
+    }
 
     if (!products) throw new BadRequestException('No existe el usuario');
 
