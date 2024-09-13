@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 import { validate as IsUUID } from 'uuid';
+import { ProductImages } from './entities/product-images.entity';
 
 @Injectable()
 export class ProductsService {
@@ -19,12 +20,20 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductImages)
+    private readonly productImages: Repository<ProductImages>,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
+    const { images = [], ...productDetails } = createProductDto;
+
     try {
-      const newProduct = this.productRepository.create(createProductDto);
-      console.log(createProductDto);
+      const newProduct = this.productRepository.create({
+        ...productDetails,
+        images: images.map((image) =>
+          this.productImages.create({ url: image }),
+        ),
+      });
       await this.productRepository.save(newProduct);
 
       return newProduct;
@@ -40,9 +49,16 @@ export class ProductsService {
       const products = await this.productRepository.find({
         take: limit,
         skip: (page - 1) * limit,
+        relations: {
+          images: true,
+        },
       });
 
-      return products;
+      console.log(products);
+      return products.map((product) => ({
+        ...product,
+        images: product.images.map((img) => img.url),
+      }));
     } catch (error) {
       throw new InternalServerErrorException('Internal Server Error');
     }
@@ -56,13 +72,14 @@ export class ProductsService {
         where: { id: term },
       });
     } else {
-      const buidler = this.productRepository.createQueryBuilder();
+      const buidler = this.productRepository.createQueryBuilder('prod');
 
       products = await buidler
         .where('UPPER(title)=:title or slug=:slug', {
           title: term.toUpperCase(),
           slug: term.toLowerCase(),
         })
+        .leftJoinAndSelect('prod.images', 'prodImages')
         .getOne();
     }
 
@@ -71,10 +88,20 @@ export class ProductsService {
     return products;
   }
 
+  async findOnePlain(term: string) {
+    const { images = [], ...rest } = await this.findOne(term);
+
+    return {
+      ...rest,
+      images: images.map((img) => img.url),
+    };
+  }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.productRepository.preload({
       id: id,
       ...updateProductDto,
+      images: [],
     });
 
     if (!product) throw new BadRequestException('No se encontro el producto');
