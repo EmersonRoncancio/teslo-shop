@@ -146,6 +146,7 @@ export class ProductsService {
   private HandleError(error: any) {
     this.logger.error(error);
     if (error.code === '23505') {
+      console.log(error);
       throw new BadRequestException(error.detail);
     }
     throw new InternalServerErrorException('Internal Server Error');
