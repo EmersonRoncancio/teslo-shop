@@ -7,7 +7,7 @@ import {
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 import { validate as IsUUID } from 'uuid';
@@ -22,6 +22,7 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductImages)
     private readonly productImages: Repository<ProductImages>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -98,19 +99,39 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
+    const { images, ...restUpdate } = updateProductDto;
     const product = await this.productRepository.preload({
       id: id,
-      ...updateProductDto,
-      images: [],
+      ...restUpdate,
     });
 
     if (!product) throw new BadRequestException('No se encontro el producto');
 
-    try {
-      await this.productRepository.save(product);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-      return product;
+    try {
+      if (images) {
+        await queryRunner.manager.delete(ProductImages, {
+          product: { id: product.id },
+        });
+
+        product.images = images.map((img) =>
+          this.productImages.create({ url: img }),
+        );
+      }
+
+      await queryRunner.manager.save(product);
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      // await this.productRepository.save(product);
+
+      return this.findOnePlain(id);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       this.HandleError(error);
     }
   }
