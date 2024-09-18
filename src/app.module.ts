@@ -4,6 +4,7 @@ import { configsEnvs } from './common/configs/env.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
 import { CommonModule } from './common/common.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CommonModule } from './common/common.module';
     }),
     ProductsModule,
     CommonModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [],
