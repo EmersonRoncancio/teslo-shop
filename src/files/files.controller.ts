@@ -12,10 +12,14 @@ import { FilesService } from './files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { FileName } from './helpers/fileName.helper';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(
+    private readonly filesService: FilesService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('product')
   @UseInterceptors(
@@ -37,7 +41,11 @@ export class FilesController {
     )
     file: Express.Multer.File,
   ) {
+    console.log(this.configService.get('db_password'));
     console.log(file);
-    return file.originalname;
+    return {
+      ok: true,
+      message: 'Se subio con exito',
+    };
   }
 }
