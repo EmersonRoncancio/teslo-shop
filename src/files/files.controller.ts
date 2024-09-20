@@ -1,8 +1,8 @@
 import {
   Controller,
-  FileTypeValidator,
+  // FileTypeValidator,
   HttpStatus,
-  ParseFilePipe,
+  // ParseFilePipe,
   ParseFilePipeBuilder,
   Post,
   UploadedFile,
@@ -10,13 +10,22 @@ import {
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { FileName } from './helpers/fileName.helper';
 
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('product')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './static/uploads',
+        filename: FileName,
+      }),
+    }),
+  )
   uploadFile(
     @UploadedFile(
       // new ParseFilePipe({
@@ -28,7 +37,7 @@ export class FilesController {
     )
     file: Express.Multer.File,
   ) {
-    console.log(file.originalname);
-    return 'hello';
+    console.log(file);
+    return file.originalname;
   }
 }
