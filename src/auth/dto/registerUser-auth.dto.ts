@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsEmail,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class RegisterUser {
   @IsEmail()
@@ -16,13 +10,7 @@ export class RegisterUser {
   @MaxLength(12)
   password: string;
 
+  @MinLength(1)
   @IsString()
   fullName: string;
-
-  @IsBoolean()
-  isActive: boolean;
-
-  //   @IsString({ each: true })
-  //   @IsArray()
-  //   roles: string[];
 }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { RegisterUser } from './dto/registerUser-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,7 +11,8 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  logger: any;
+  private readonly logger = new Logger('AuthService');
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -20,8 +22,10 @@ export class AuthService {
     try {
       const user = this.userRepository.create(registerDto);
       await this.userRepository.save(user);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...restUser } = user;
 
-      return user;
+      return restUser;
     } catch (error) {
       this.HandleError(error);
     }
