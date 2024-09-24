@@ -8,6 +8,7 @@ import { RegisterUser } from './dto/registerUser-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -20,10 +21,15 @@ export class AuthService {
 
   async registerUsers(registerDto: RegisterUser) {
     try {
-      const user = this.userRepository.create(registerDto);
+      const { password: passw, ...restUserData } = registerDto;
+      const salt = bcrypt.genSaltSync();
+      const user = this.userRepository.create({
+        password: bcrypt.hashSync(passw, salt),
+        ...restUserData,
+      });
       await this.userRepository.save(user);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...restUser } = user;
+      const { password, roles, isActive, ...restUser } = user;
 
       return restUser;
     } catch (error) {
