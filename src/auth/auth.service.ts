@@ -3,12 +3,14 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { RegisterUser } from './dto/registerUser-auth.dto';
+import { RegisterUserDto } from './dto/registerUser-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { LoginUserDto } from './dto/loginUser-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +21,7 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async registerUsers(registerDto: RegisterUser) {
+  async registerUsers(registerDto: RegisterUserDto) {
     try {
       const { password: passw, ...restUserData } = registerDto;
       const salt = bcrypt.genSaltSync();
@@ -35,6 +37,19 @@ export class AuthService {
     } catch (error) {
       this.HandleError(error);
     }
+  }
+
+  async loginUsers(loginDto: LoginUserDto) {
+    const user = await this.userRepository.findOneBy({ email: loginDto.email });
+    if (!user) throw new UnauthorizedException();
+
+    const validatePassword = bcrypt.compareSync(
+      loginDto.password,
+      user.password,
+    );
+    if (!validatePassword) throw new UnauthorizedException();
+
+    return user;
   }
 
   private HandleError(error: any) {
