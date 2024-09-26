@@ -11,6 +11,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { LoginUserDto } from './dto/loginUser-auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async registerUsers(registerDto: RegisterUserDto) {
@@ -49,7 +51,10 @@ export class AuthService {
     );
     if (!validatePassword) throw new UnauthorizedException();
 
-    return user;
+    const payload = { username: user.email, sub: user.id };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
   private HandleError(error: any) {
