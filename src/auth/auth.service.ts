@@ -51,7 +51,7 @@ export class AuthService {
     );
     if (!validatePassword) throw new UnauthorizedException();
 
-    const payload = { username: user.email, sub: user.id };
+    const payload = { email: user.email };
     return {
       access_token: this.jwtService.sign(payload),
     };
