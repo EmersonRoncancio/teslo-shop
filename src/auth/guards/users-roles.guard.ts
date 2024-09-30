@@ -24,12 +24,11 @@ export class UsersRolesGuard implements CanActivate {
 
     if (
       role.includes(validateRol.roles[0]) &&
-      validateRol.roles[0] === role[1]
+      validateRol.roles[0] === 'user'
     ) {
       console.log('sos admin');
+      throw new UnauthorizedException();
     }
-
-    console.log(role);
 
     return true;
   }
