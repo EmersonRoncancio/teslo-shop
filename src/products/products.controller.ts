@@ -13,6 +13,8 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Roles } from 'src/auth/interfaces/rolesvalidate.interface';
 
 @Controller('products')
 export class ProductsController {
@@ -23,6 +25,7 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
+  @Auth(Roles.admin)
   @Get()
   findAll(@Query() paginationDTO: PaginationDTO) {
     return this.productsService.findAll(paginationDTO);
