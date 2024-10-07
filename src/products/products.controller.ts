@@ -15,12 +15,24 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles } from 'src/auth/interfaces/rolesvalidate.interface';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Product } from './entities/product.entity';
 
+@ApiTags('Productos')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'Creacion de producto',
+    type: Product,
+  })
+  @ApiResponse({ status: 400, description: 'Solicitud incorrecta' })
+  @ApiResponse({ status: 500, description: 'Error en el servidor' })
+  @ApiResponse({ status: 500, description: 'Error en el servidor' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
