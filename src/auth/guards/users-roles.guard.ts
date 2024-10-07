@@ -25,13 +25,17 @@ export class UsersRolesGuard implements CanActivate {
     const validateRol: User = req.user;
     if (!validateRol) throw new BadRequestException();
 
-    if (
-      role.includes(validateRol.roles[0]) &&
-      validateRol.roles[0] === 'admin'
-    ) {
-      return true;
-    } else {
-      throw new UnauthorizedException();
-    }
+    // if (
+    //   role.includes(validateRol.roles[0]) &&
+    //   validateRol.roles[0] === 'admin'
+    // ) {
+    //   return true;
+    // } else {
+    //   throw new UnauthorizedException();
+    // }
+
+    if (role.includes(validateRol.roles[0])) return true;
+
+    throw new UnauthorizedException();
   }
 }

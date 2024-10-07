@@ -42,4 +42,10 @@ export class AuthController {
   getUserRoles2(@GetUser() user: User) {
     return user;
   }
+
+  @Get('checkAuth')
+  @Auth(Roles.admin, Roles.user)
+  checkAuthStatus(@GetUser() user: User) {
+    return this.authService.CheckAuthStatus(user.id);
+  }
 }

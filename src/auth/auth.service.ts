@@ -57,6 +57,13 @@ export class AuthService {
     };
   }
 
+  CheckAuthStatus(id: string) {
+    const payload = { id: id };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
+
   private HandleError(error: any) {
     this.logger.error(error);
     if (error.code === '23505') {
