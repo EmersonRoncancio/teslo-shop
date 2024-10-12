@@ -6,6 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { CommonModule } from './common/common.module';
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
+import { WebSocketsModule } from './web-sockets/web-sockets.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthModule } from './auth/auth.module';
     CommonModule,
     FilesModule,
     AuthModule,
+    WebSocketsModule,
   ],
   controllers: [],
   providers: [],
