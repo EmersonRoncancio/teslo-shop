@@ -2,6 +2,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { WebSocketsService } from './web-sockets.service';
 import { Socket } from 'socket.io';
@@ -10,13 +11,19 @@ import { Socket } from 'socket.io';
 export class WebSocketsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
+  @WebSocketServer() wss: Socket;
+
   constructor(private readonly webSocketsService: WebSocketsService) {}
 
   handleConnection(client: Socket) {
-    console.log('El cliente se conecto', client.id);
+    this.webSocketsService.registerClient(client);
+    console.log(this.webSocketsService.getClients());
+    this.wss.emit('clients-updated', this.webSocketsService.getClients());
   }
 
   handleDisconnect(client: Socket) {
-    console.log('El cliente se desconecto', client.id);
+    this.webSocketsService.removeCliente(client.id);
+    console.log(this.webSocketsService.getClients());
+    this.wss.emit('clients-updated', this.webSocketsService.getClients());
   }
 }
